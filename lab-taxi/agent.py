@@ -243,7 +243,7 @@ class QLearningGuided(Agent):
 
 class KG(Agent):
 
-    def __init__(self, env, gamma=1.0, epsilon=10.0, eps_decay=0.999, eps_min=0.01, online=True):
+    def __init__(self, env, gamma=1.0, epsilon=10.0, eps_decay=0.9999, eps_min=0.1, online=True):
         super().__init__(env)
         self.env = env
         self.nA = env.nA
@@ -258,7 +258,7 @@ class KG(Agent):
 
         self.mu_init = 0.0
         self.sigma_init = 10000
-        self.sigma_measure = 1.0
+        self.sigma_measure = 0.1
 
         self.mu = defaultdict(lambda: np.ones([self.nA]) * self.mu_init)
         self.sigma = defaultdict(lambda: np.ones([self.nA]) * self.sigma_init)

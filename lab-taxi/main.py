@@ -13,11 +13,11 @@ print(game_map)
 
 sns.set(rc={'figure.figsize': (11.7, 8.27)})
 
-# agent_names = ["Sarsa", "Q-Learning", "Expected Sarsa", "Guided Q-Learning"]
-# agent_classes = [Sarsa, QLearning, ExpectedSarsa, QLearningGuided]
+agent_names = ["Sarsa", "Q-Learning", "Expected Sarsa", "Guided Q-Learning", "KG"]
+agent_classes = [Sarsa, QLearning, ExpectedSarsa, QLearningGuided, KG]
 
-agent_names = ["KG"]
-agent_classes = [KG]
+# agent_names = ["KG"]
+# agent_classes = [KG]
 
 data = pd.DataFrame([], columns=['Agent', 'episode', 'reward'])
 
@@ -26,7 +26,6 @@ for i in range(len(agent_classes)):
     agent_name = agent_names[i]
 
     avg_rewards, best_avg_reward = interact(env, agent)
-    print("avg_rewards={} best_avg_reward={}".format(avg_rewards, best_avg_reward))
 
     data_new = pd.DataFrame(list(avg_rewards), columns=['reward'])
     data_new.loc[:, 'episode'] = range(0, len(list(avg_rewards)))
@@ -34,8 +33,13 @@ for i in range(len(agent_classes)):
     data = data.append(data_new)
 
 sns_plot = sns.lineplot(x='episode', y='reward', hue='Agent', data=data)
+sns_plot.set(ylim=(-500, 20))
 # sns_plot.figure.savefig("tax1v3.png")
+plt.show()
 
+sns_plot = sns.lineplot(x='episode', y='reward', hue='Agent', data=data)
+sns_plot.set(ylim=(-60, 20))
+# sns_plot.figure.savefig("tax1v3.png")
 plt.show()
 
 # sns.set(rc={'figure.figsize': (11.7, 8.27)})
