@@ -1,4 +1,4 @@
-from agent import Agent, Sarsa, QLearning, ExpectedSarsa, QLearningGuided
+from agent import Agent, Sarsa, QLearning, ExpectedSarsa, QLearningGuided, KG
 from monitor import interact
 import gym
 import numpy as np
@@ -13,12 +13,15 @@ print(game_map)
 
 sns.set(rc={'figure.figsize': (11.7, 8.27)})
 
-agent_names = ["Sarsa", "Q-Learning", "Expected Sarsa", "Guided Q-Learning"]
-agent_classes = [Sarsa, QLearning, ExpectedSarsa, QLearningGuided]
+# agent_names = ["Sarsa", "Q-Learning", "Expected Sarsa", "Guided Q-Learning"]
+# agent_classes = [Sarsa, QLearning, ExpectedSarsa, QLearningGuided]
+
+agent_names = ["KG"]
+agent_classes = [KG]
 
 data = pd.DataFrame([], columns=['Agent', 'episode', 'reward'])
 
-for i in range(4):
+for i in range(len(agent_classes)):
     agent = agent_classes[i](env)
     agent_name = agent_names[i]
 
