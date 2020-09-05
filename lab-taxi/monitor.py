@@ -3,7 +3,7 @@ import sys
 import math
 import numpy as np
 
-def interact(env, agent, num_episodes=100000, window=100000):
+def interact(env, agent, num_episodes=10000, window=10000):
     """ Monitor agent's performance.
     
     Params

@@ -16,6 +16,10 @@ class keydefaultdict(defaultdict):
             return ret
 
 
+def max_n(a, n):
+    return np.partition(a.flatten(), -n)[-n]
+
+
 def randargmax(nparray):
     return np.random.choice(np.flatnonzero(nparray == nparray.max()))
 
@@ -243,7 +247,8 @@ class QLearningGuided(Agent):
 
 class KG(Agent):
 
-    def __init__(self, env, gamma=1.0, epsilon=10.0, eps_decay=0.9999, eps_min=0.1, online=True):
+    def __init__(self, env, gamma=1.0, epsilon=100.0, eps_decay=1.0, eps_min=1.0,
+                 mu_init=0.0, sigma_init=100, sigma_measure=10.0, sigma_measure_decay=0.999, sigma_measure_min=0.01, online=True):
         super().__init__(env)
         self.env = env
         self.nA = env.nA
@@ -256,9 +261,11 @@ class KG(Agent):
 
         self.online = online
 
-        self.mu_init = 0.0
-        self.sigma_init = 10000
-        self.sigma_measure = 0.1
+        self.mu_init = mu_init
+        self.sigma_init = sigma_init
+        self.sigma_measure = sigma_measure
+        self.sigma_measure_decay = sigma_measure_decay
+        self.sigma_measure_min = sigma_measure_min
 
         self.mu = defaultdict(lambda: np.ones([self.nA]) * self.mu_init)
         self.sigma = defaultdict(lambda: np.ones([self.nA]) * self.sigma_init)
@@ -269,11 +276,24 @@ class KG(Agent):
 
         self.kg_nu = keydefaultdict(lambda key: self.sigma_tilde[key] * (self.zeta[key] * norm.cdf(self.zeta[key]) + norm.pdf(self.zeta[key])))
 
+        self.is_monitored = True
+        self.episode_choices = []
+        self.greedy_choice = []
+        self.episode_mu_vs_nu = []
+        self.mu_vs_nu = []
+
     def act(self, state):
         if self.online:
             action = randargmax(self.mu[state] + self.epsilon * self.kg_nu[state])
         else:
             action = randargmax(self.kg_nu[state])
+
+        if self.is_monitored:
+            if self.mu[state][action] == np.max(self.mu[state]):
+                self.episode_choices.append(1)
+                self.episode_mu_vs_nu.append((np.max(self.mu[state]) - max_n(self.mu[state], 2), np.max(self.epsilon * self.kg_nu[state])))
+            else:
+                self.episode_choices.append(0)
         return action
 
     def learn(self, state, action, reward, next_state, done):
@@ -301,4 +321,10 @@ class KG(Agent):
 
         self.n_episodes += 1
         if done:
+            if self.is_monitored:
+                self.greedy_choice.append(np.sum(self.episode_choices) / len(self.episode_choices))
+                self.mu_vs_nu.append((np.mean([mu_nu[0] for mu_nu in self.episode_mu_vs_nu]),
+                                      np.mean([mu_nu[1] for mu_nu in self.episode_mu_vs_nu])))
+                self.episode_mu_vs_nu = []
             self.epsilon = max(self.epsilon * self.eps_decay, self.eps_min)
+            self.sigma_measure = max(self.sigma_measure * self.sigma_measure_decay, self.sigma_measure_min)
