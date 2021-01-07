@@ -5,6 +5,7 @@ from collections import namedtuple, deque
 from model import QNetwork
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
@@ -17,7 +18,8 @@ UPDATE_EVERY = 4        # how often to update the network
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-class Agent():
+
+class Agent(object):
     """Interacts with and learns from the environment."""
 
     def __init__(self, state_size, action_size, seed):
@@ -46,7 +48,7 @@ class Agent():
     def step(self, state, action, reward, next_state, done):
         # Save experience in replay memory
         self.memory.add(state, action, reward, next_state, done)
-        
+
         # Learn every UPDATE_EVERY time steps.
         self.t_step = (self.t_step + 1) % UPDATE_EVERY
         if self.t_step == 0:
@@ -85,8 +87,22 @@ class Agent():
         """
         states, actions, rewards, next_states, dones = experiences
 
-        ## TODO: compute and minimize the loss
-        "*** YOUR CODE HERE ***"
+        # Prepare output
+
+        outputs = self.qnetwork_local(states).gather(1, actions)
+
+        # Prepare target
+
+        Q_targets = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
+        targets = rewards + gamma * Q_targets * (1 - dones)
+
+        # Run training step
+
+        self.optimizer.zero_grad()
+        loss = nn.MSELoss(reduction='sum')
+        output = loss(outputs, targets)
+        output.backward()
+        self.optimizer.step()
 
         # ------------------- update target network ------------------- #
         self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)                     
@@ -139,7 +155,7 @@ class ReplayBuffer:
         next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float().to(device)
         dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)).float().to(device)
   
-        return (states, actions, rewards, next_states, dones)
+        return states, actions, rewards, next_states, dones
 
     def __len__(self):
         """Return the current size of internal memory."""
