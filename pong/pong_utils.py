@@ -178,8 +178,8 @@ def surrogate(policy, old_probs, states, actions, rewards,
     rewards_normalized = (rewards_future - mean[:,np.newaxis])/std[:,np.newaxis]
     
     # convert everything into pytorch tensors and move to gpu if available
-    actions = torch.tensor(actions, dtype=torch.int8, device=device)
-    old_probs = torch.tensor(old_probs, dtype=torch.float, device=device)
+    actions = torch.tensor(np.array(actions), dtype=torch.int8, device=device)
+    old_probs = torch.tensor(np.array(old_probs), dtype=torch.float, device=device)
     rewards = torch.tensor(rewards_normalized, dtype=torch.float, device=device)
 
     # convert states to policy (or probability)
@@ -215,8 +215,8 @@ def clipped_surrogate(policy, old_probs, states, actions, rewards,
     rewards_normalized = (rewards_future - mean[:,np.newaxis])/std[:,np.newaxis]
     
     # convert everything into pytorch tensors and move to gpu if available
-    actions = torch.tensor(actions, dtype=torch.int8, device=device)
-    old_probs = torch.tensor(old_probs, dtype=torch.float, device=device)
+    actions = torch.tensor(np.array(actions), dtype=torch.int8, device=device)
+    old_probs = torch.tensor(np.array(old_probs), dtype=torch.float, device=device)
     rewards = torch.tensor(rewards_normalized, dtype=torch.float, device=device)
 
     # convert states to policy (or probability)
